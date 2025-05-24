@@ -35,7 +35,7 @@ cls
 ** DATA IMPORT  
 ***************
 ** LOAD the national registry deaths 2008-2023 excel dataset
-import spss using "`datapath'/Dataset/data_set_09_5_25.sav", clear
+import spss using "`datapath'/Dataset/data_set_20_5_25.sav", clear
 
 *******************
 ** DATA PREPARATION 
@@ -163,7 +163,99 @@ foreach x of varlist YEDE_Q_total_score restraint eating_concern shape_concern w
 *------------------------------------------------------
 	
 *Participant self-esteem - Table 3c
+	ttest self_esteem_scale_total, by(sex)
+	ttest self_esteem_scale_total, by(age_cat)
+	oneway self_esteem_scale_total bmi_class_2, tab
+	
 	tab self_esteem_cat sex, col exact
 	tab self_esteem_cat age_cat, col exact
 	tab self_esteem_cat bmi_class_2, col exact
+
+*------------------------------------------------------
+
+*DEBA Psychological Factors by Presence and Absence of DEBAs - Table 4a
+
+gen deba = . 
+replace deba =0 if YEDE_Q_total_score<=2.8
+replace deba = 1 if YEDE_Q_total_score>2.8 & YEDE_Q_total_score!=.
+
+label var deba "DBEA"
+label define deba 0"No DEBA" 1"DEBA"
+label value deba deba
+
+tab sex deba, col exact
+tab age_cat deba, col exact
+tab bmi_class_2 deba, col exact
+
+
+gen depress= .
+replace depress = 0 if PHQ_2<3
+replace depress = 1 if PHQ_2>=3 & PHQ_2!=.
+label var depress "Clinical Depression"
+label define depress 0"No" 1"Depression"
+label value depress depress
+
+gen anxiety = .
+replace anxiety = 0 if GAD_2<3
+replace anxiety = 1 if GAD_2>=3 & GAD_2!=.
+label var anxiety "Clinical Anxiety"
+label define anxiety 0"No" 1"Anxiety"
+label value anxiety anxiety
+
+
+tab depress deba, col exact
+tab anxiety deba, col exact
+tab self_esteem_cat deba, col exact
+tab coping_cat_1 deba, col exact
+tab coping_cat_2 deba, col exact
+tab ace_risk_cat3 deba, col exact
+
+*------------------------------------------------------
+
+*BMI Outcomes by Presence or Absence of DEBAs - 6a
+
+gen bmi_change = BMI_today - BMI_year_prior
+gen bmi_change_cat = .
+replace bmi_change_cat = 1 if bmi_change<=-0
+replace bmi_change_cat = 2 if bmi_change>=0 & bmi_change!=.
+label var bmi_change_cat "BMI change categories"
+label define bmi_change_cat 1"Decrease" 2"Increase"
+label value bmi_change_cat bmi_change_cat
+
+ttest bmi_change, by(deba)
+tab bmi_change_cat deba, row exact
+
+*------------------------------------------------------
+*Comparison of Exercise Score and BMI Outcome - 6b
+
+gen exercise_cat = .
+replace exercise_cat = 1 if exercise_score <2
+replace exercise_cat = 2 if exercise_score ==2
+replace exercise_cat = 3 if exercise_score >2 & exercise_score!=.
+
+label var exercise_cat "Exercise Categories"
+label define exercise_cat 1"Low" 2"Moderate" 3"High"
+label value exercise_cat exercise_cat
+tab exercise_cat, gen (exercise_cat_)
+
+tab exercise_cat_1 bmi_change_cat, row exact
+tab exercise_cat_2 bmi_change_cat, row exact
+tab exercise_cat_3 bmi_change_cat, row exact
+
+*------------------------------------------------------
+*Medical Complications by Presence or Absence of DEBAs - 7
+tab DM deba, col exact
+tab hypertensive deba, col exact
+*------------------------------------------------------
+
+logistic deba i.age_cat, vce(robust) cformat(%9.2f) allbaselevels
+logistic deba i.bmi_class_2, vce(robust) cformat(%9.2f) allbaselevels
+logistic deba i.DM, vce(robust) cformat(%9.2f) allbaselevels
+logistic deba i.hypertensive, vce(robust) cformat(%9.2f) allbaselevels
+
+logistic deba posession_score, vce(robust) cformat(%9.2f) allbaselevels
+logistic deba sanitation_index, vce(robust) cformat(%9.2f) allbaselevels
+*------------------------------------------------------
+*----------------------END-----------------------------
+*------------------------------------------------------
 
