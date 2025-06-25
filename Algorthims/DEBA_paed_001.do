@@ -37,6 +37,10 @@ cls
 ** LOAD the national registry deaths 2008-2023 excel dataset
 import spss using "`datapath'/Dataset/data_set_20_5_25.sav", clear
 
+replace BMI_class = 1 if study_ID == 25
+replace BMI_class = 1 if study_ID == 30
+replace BMI_class = 1 if study_ID == 33
+
 *******************
 ** DATA PREPARATION 
 *******************
@@ -259,3 +263,8 @@ logistic deba sanitation_index, vce(robust) cformat(%9.2f) allbaselevels
 *----------------------END-----------------------------
 *------------------------------------------------------
 
+tab ace_risk_cat1 deba, col exact
+tab ace_risk_cat2 deba, col exact
+tab bmi_change_cat, gen(bmicat)
+prtest bmicat1, by(deba)
+prtest bmicat2, by(deba)
