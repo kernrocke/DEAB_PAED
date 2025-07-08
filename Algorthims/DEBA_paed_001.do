@@ -268,3 +268,6 @@ tab ace_risk_cat2 deba, col exact
 tab bmi_change_cat, gen(bmicat)
 prtest bmicat1, by(deba)
 prtest bmicat2, by(deba)
+
+*Power calculation
+power oneproportion 0.46 0.2, test(binomial) n(30)
